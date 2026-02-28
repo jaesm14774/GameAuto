@@ -1,0 +1,166 @@
+# ============================================================
+# 指尖棋兵 (ElfTW) — GameAuto 配置 (雷電模擬器 + 簡易法師策略)
+# ============================================================
+
+game:
+  name: "elftw"
+  window_title: "buy"
+  alt_titles:
+    - "LDPlayer"
+    - "雷電模擬器"
+    - "指尖棋兵"
+  description: >
+    Auto-chess game. Simple bot: buy cards, upgrade population, refresh.
+
+# 螢幕擷取
+capture:
+  mode: "fullscreen"
+  monitor: 2
+
+# Vision Client 設定
+vision:
+  grid_cols: 20
+  grid_rows: 10
+  change_threshold: 0.02
+  min_interval: 2.0
+  memory_path: "memory_elftw.json"
+  # Gemini thinking level: "low", "medium", "high"
+  # 狀態偵測是簡單分類，設 low 最快
+  thinking_level: "low"
+
+# 操作設定
+controller:
+  click_delay: [0.05, 0.12]
+  move_duration: [0.03, 0.08]
+
+# 主迴圈
+loop:
+  tick_interval: 0.5
+  max_idle_seconds: 120
+  screenshot_on_error: true
+
+# ============================================================
+# 狀態定義
+# ============================================================
+states:
+  main_menu:
+    detect: "看到對戰按鈕和合作按鈕"
+
+  matchmaking:
+    detect: "搜尋對手畫面"
+
+  relic_select:
+    detect: "聖物選擇畫面，顯示多個聖物可選"
+    timeout: 5
+
+  preparation:
+    detect: "棋盤+底部商店卡牌+準備按鈕"
+
+  battle:
+    detect: "棋盤上單位戰鬥中，無可操作按鈕"
+
+  match_result_win:
+    detect: "勝利結算畫面，顯示第1名或冠軍、勝利字樣"
+
+  match_result_defeat:
+    detect: "失敗結算畫面，被淘汰或非第1名排名（第2名以後），顯示排名和獎勵"
+
+  protection_popup:
+    detect: "精靈的庇護彈窗，詢問是否接受庇護（接受庇護按鈕）"
+
+  unknown:
+    detect: "無法辨識的畫面"
+
+# 狀態轉場
+transitions:
+  - from: main_menu
+    to: matchmaking
+    condition: "點擊對戰按鈕後"
+  - from: matchmaking
+    to: relic_select
+    condition: "找到對手後"
+  - from: relic_select
+    to: preparation
+    condition: "選擇聖物後或超時"
+  - from: preparation
+    to: battle
+    condition: "倒計時結束或點擊準備按鈕"
+  - from: battle
+    to: preparation
+    condition: "戰鬥結束，進入下一回合"
+  - from: battle
+    to: match_result_win
+    condition: "獲得第1名/勝利"
+  - from: battle
+    to: match_result_defeat
+    condition: "被淘汰（非第1名）"
+  - from: match_result_win
+    to: main_menu
+    condition: "確認結算後"
+  - from: match_result_defeat
+    to: protection_popup
+    condition: "確認結算後彈出庇護"
+  - from: match_result_defeat
+    to: main_menu
+    condition: "確認結算後（庇護已用完）"
+  - from: "*"
+    to: protection_popup
+    condition: "彈出精靈庇護提示"
+
+# ============================================================
+# 策略 — 簡易法師對 (打人機用)
+# ============================================================
+strategy:
+  composition: "mage"
+  # 準備階段先做幾個 tick 的固定操作（每 tick 2 輪），之後交給 LLM 判斷
+  max_prep_rounds: 3
+
+  # --------------------------------------------------------
+  # 固定座標 (相對於遊戲窗口左上角)
+  #
+  # !! 首次使用請執行: python main.py --calibrate
+  # !! 把滑鼠移到各按鈕上，記錄 Game 座標，填入下方 !!
+  # --------------------------------------------------------
+  positions:
+    # 商店卡牌 (底部三張)
+    card_slots:
+      - {x: 1080, y: 1028}   # 卡牌左
+      - {x: 1273, y: 1049}   # 卡牌中
+      - {x: 1448, y: 1039}   # 卡牌右
+
+    # 刷新商店按鈕
+    refresh_btn: {x: 1464, y: 1210}
+
+    # 升人口按鈕
+    population_btn: {x: 1122, y: 1233}
+
+    # 準備按鈕
+    ready_btn: {x: 1615, y: 969}
+
+    # 對戰按鈕 (主選單)
+    battle_btn: {x: 1120, y: 1084}
+
+    # 確認/繼續按鈕 (結算畫面) — 待校準
+    confirm_btn: {x: 1280, y: 1100}
+
+    # 第一個聖物位置 — 待校準
+    relic_first: {x: 1100, y: 700}
+
+    # 右上角秒數框（每輪點一下防卡頓，避免點到角色）
+    safe_click: {x: 1750, y: 120}
+
+    # 接受庇護按鈕
+    accept_btn: {x: 1255, y: 1019}
+
+    # 棋盤格座標 (4排×5列)
+    # Row 0 = 第一排 (最前排，靠敵方)
+    # Row 3 = 第四排 (最後排，靠自己)
+    # Col 0 = 最左, Col 4 = 最右
+    # 由四角座標雙線性插值計算:
+    #   左上(1046,648) 右上(1487,640)
+    #   左下(1023,947) 右下(1507,933)
+    board_grid:
+      - [{x: 1088, y: 685}, {x: 1177, y: 683}, {x: 1266, y: 681}, {x: 1356, y: 679}, {x: 1445, y: 678}]
+      - [{x: 1083, y: 759}, {x: 1175, y: 757}, {x: 1266, y: 755}, {x: 1357, y: 753}, {x: 1449, y: 751}]
+      - [{x: 1078, y: 834}, {x: 1172, y: 831}, {x: 1266, y: 829}, {x: 1359, y: 827}, {x: 1453, y: 824}]
+      - [{x: 1074, y: 908}, {x: 1170, y: 906}, {x: 1265, y: 903}, {x: 1361, y: 900}, {x: 1457, y: 898}]

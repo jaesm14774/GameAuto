@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+dist/
+build/
+.vscode/
+screenshots/
+memory_*.json
+templates/elftw/
