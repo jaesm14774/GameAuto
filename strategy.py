@@ -199,7 +199,10 @@ class ElfTWStrategy(GameStrategy):
         self._prep_round = 0
         self._max_prep_rounds = strategy_cfg.get("max_prep_rounds", 3)
         self._is_first_round_of_match = True  # 每場比賽第一回合
-        self._positioned_this_prep = False     # 本次準備階段是否已調陣
+        self._battle_round = 0                 # 本場比賽的戰鬥回合數
+        self._positioned_this_match = False    # 本場比賽是否已調過陣（只調一次）
+        self._smart_bought_this_prep = False   # 本次準備是否已做智慧購買
+        self._has_knowledge_base = False       # 是否有角色知識庫（由 agent 設定）
 
     def _click_pos(self, key: str, desc: str) -> Optional[Action]:
         """從 positions 取座標產生 click Action，找不到回傳 None"""
@@ -214,12 +217,15 @@ class ElfTWStrategy(GameStrategy):
             if state == "battle" and self._prep_round > 0:
                 # 從準備進入戰鬥：下次準備不再是首輪
                 self._is_first_round_of_match = False
+                self._battle_round += 1
             self._prep_round = 0
-            self._positioned_this_prep = False
+            self._smart_bought_this_prep = False
 
-        # 回到主選單表示本局結束，重置首輪旗標
+        # 回到主選單表示本局結束，重置所有旗標
         if state == "main_menu":
             self._is_first_round_of_match = True
+            self._battle_round = 0
+            self._positioned_this_match = False
 
         handler = getattr(self, f"_handle_{state}", None)
         if handler:
@@ -300,15 +306,30 @@ class ElfTWStrategy(GameStrategy):
 
             return actions
 
-        # 買完卡後：調整陣型（每次準備階段只做一次）
-        if not self._positioned_this_prep:
-            self._positioned_this_prep = True
+        # 調整陣型：只在第 2 回合做一次，之後整場不再調
+        if not self._positioned_this_match and self._battle_round == 1:
+            self._positioned_this_match = True
             return [Action(
                 type="llm_position",
-                desc="偵測棋盤角色位置並調整陣型",
+                desc="第2回合：偵測棋盤角色位置並調整陣型",
             )]
 
-        # 超過 max_prep_rounds 後：問 LLM 讀金幣和人口
+        # 安全上限：LLM 決策超過 2 輪就直接按準備，避免無限循環
+        llm_rounds = self._prep_round - effective_max - 1  # 扣掉盲買和調陣的輪數
+        if llm_rounds > 2:
+            log.info("LLM 決策已超過 2 輪，直接按準備")
+            a = self._click_pos("ready_btn", "超過輪數上限，點準備")
+            return [a] if a else []
+
+        # 有知識庫時：用智慧準備（合併讀商店+棋盤+金幣，知識庫決策）
+        if self._has_knowledge_base and not self._smart_bought_this_prep:
+            self._smart_bought_this_prep = True
+            return [Action(
+                type="llm_smart_prep",
+                desc="智慧準備：讀取商店+棋盤+金幣，知識庫決策購買",
+            )]
+
+        # 無知識庫 / 智慧購買後仍有金幣：問 LLM 讀金幣和人口
         return [Action(
             type="llm_decide_prep",
             desc=(
@@ -331,11 +352,27 @@ class ElfTWStrategy(GameStrategy):
         return [Action(type="wait", seconds=5, desc="等待配對")]
 
     def _handle_relic_select(self, context: Dict[str, Any]) -> List[Action]:
+        # 有聖物優先清單 → LLM 判讀選最佳聖物
+        if self.rules.relic_priorities:
+            return [Action(
+                type="llm_relic_select",
+                desc="判讀聖物並選擇最佳聖物",
+            )]
+        # 無清單 → 選第一個
         a = self._click_pos("relic_first", "選第一個聖物")
         return [a] if a else [Action(type="llm_fallback", desc="找不到聖物")]
 
     def _handle_battle(self, context: Dict[str, Any]) -> List[Action]:
-        return [Action(type="wait", seconds=5, desc="等待戰鬥結束")]
+        actions: List[Action] = []
+        # 有知識庫時，利用戰鬥空檔預分析棋盤（隱藏 LLM 延遲）
+        time_in_state = context.get("time_in_state", 0)
+        if self._has_knowledge_base and 3 < time_in_state < 10:
+            actions.append(Action(
+                type="llm_pre_analyze",
+                desc="戰鬥中預分析棋盤",
+            ))
+        actions.append(Action(type="wait", seconds=5, desc="等待戰鬥結束"))
+        return actions
 
     def _handle_match_result_win(self, context: Dict[str, Any]) -> List[Action]:
         a = self._click_pos("confirm_btn", "確認勝利結算")
@@ -348,6 +385,10 @@ class ElfTWStrategy(GameStrategy):
     def _handle_protection_popup(self, context: Dict[str, Any]) -> List[Action]:
         a = self._click_pos("accept_btn", "接受庇護")
         return [a] if a else [Action(type="llm_fallback", desc="找不到庇護按鈕")]
+
+    def _handle_reward_popup(self, context: Dict[str, Any]) -> List[Action]:
+        a = self._click_pos("accept_btn", "接受贈禮")
+        return [a] if a else [Action(type="llm_fallback", desc="找不到贈禮按鈕")]
 
 
 # ======================================================================

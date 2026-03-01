@@ -1,0 +1,155 @@
+{
+  "characters": [
+    {
+      "name": "雷神·索爾",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "釋放8道雷電"
+      ],
+      "ability_desc": "釋放8道雷電，每道雷電對攻擊範圍內隨機一個敵方目標造成100%攻擊傷害，附帶命中目標最大血量20%的真實傷害，最多不超過施法者攻擊力的50%。",
+      "position_pref": "front",
+      "priority": 15,
+      "notes": "強大的多段隨機目標AoE傷害，附帶基於最大生命值的真實傷害，適合對付高血量敵人。"
+    },
+    {
+      "name": "精靈法師",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "範圍攻擊",
+        "法師增益"
+      ],
+      "ability_desc": "Deals 150% attack damage to all enemies in range. Passive skills provide significant base attack and magic damage buffs to all allies when 3 or 5 mages are present.",
+      "position_pref": "front",
+      "priority": 15,
+      "notes": "A high-value epic mage that provides powerful team-wide offensive buffs and strong AoE damage. Essential for mage-centric compositions."
+    },
+    {
+      "name": "岩精靈",
+      "role": "support",
+      "classes": [
+        "精靈",
+        "魔法"
+      ],
+      "abilities": [
+        "使用後45%概率提升一人口"
+      ],
+      "ability_desc": "使用後有45%機率增加人口上限。初始被動與滿星被動皆為使用後立即生效，且不佔用上陣位置。",
+      "position_pref": "back",
+      "priority": 25,
+      "notes": "不佔人口位的特殊輔助，能機率性提升人口上限。"
+    },
+    {
+      "name": "光精靈",
+      "role": "support",
+      "classes": [
+        "精靈",
+        "魔法"
+      ],
+      "abilities": [
+        "升星"
+      ],
+      "ability_desc": "使用後90%概率升星一個英雄。使用後立即生效，不佔用上陣位置。",
+      "position_pref": "back",
+      "priority": 15,
+      "notes": "強大的輔助英雄，能快速提升隊友星級且不佔位置。"
+    },
+    {
+      "name": "虛空先知",
+      "role": "healer",
+      "classes": [
+        "惡魔",
+        "魔法"
+      ],
+      "abilities": [
+        "治療"
+      ],
+      "ability_desc": "為範圍內血量最低的友方單位回復70%攻擊力的生命值；光環提供增傷與減傷。",
+      "position_pref": "mid",
+      "priority": 25,
+      "notes": "同時視為所有職業，提供全隊增傷與減傷光環，並具備單體治療能力。"
+    },
+    {
+      "name": "冰火龍",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "寒冰吐息"
+      ],
+      "ability_desc": "攻擊單體目標，造成100%攻擊傷害，每10秒釋放寒冰吐息產生冰凌，使命中的敵人凍結2秒造成300點真實傷害。",
+      "position_pref": "front",
+      "priority": 15,
+      "notes": "具備單體控制與真實傷害，且擁有生命值加成的光環。"
+    },
+    {
+      "name": "光之領主",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "能量波"
+      ],
+      "ability_desc": "蓄力3秒後向敵人釋放120%攻擊力具有穿透能力的能量波；初始被動：每有一個友方英雄升星，攻擊+12.5%，每次開場後獲得一次不需要蓄力的能量波；滿星被動：每有一個友方英雄升星，攻擊額外+40%",
+      "position_pref": "back",
+      "priority": 15,
+      "notes": "具有強大的穿透群體傷害，且能透過隊友升星大幅提升攻擊力，開場即有爆發。"
+    },
+    {
+      "name": "聖光天使",
+      "role": "healer",
+      "classes": [
+        "牧師",
+        "魔法"
+      ],
+      "abilities": [
+        "天使翅膀"
+      ],
+      "ability_desc": "為生命值最低的友方回復100%攻擊力的生命值。戰鬥開始時，為自己和自己身正後所有友方施加天使翅膀。具有天使翅膀的友方在即將受到致命傷時，獲得0.5秒無敵，然後失去天使翅膀。",
+      "position_pref": "front",
+      "priority": 25,
+      "notes": "提供單體治療與獨特的致命傷保護機制，能顯著提升後排隊友的生存能力。"
+    },
+    {
+      "name": "魔女",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "黑暗侵襲"
+      ],
+      "ability_desc": "召喚黑暗之球造成50%真實傷害並獲得魔能。累計4層魔能後釋放黑暗侵襲，召喚6個黑暗之球攻擊生命值最高的敵人。戰鬥開始獲得2層魔能。",
+      "position_pref": "mid",
+      "priority": 15,
+      "notes": "真實傷害，高爆發單體攻擊，魔能疊加提升攻擊力"
+    },
+    {
+      "name": "黯鐵",
+      "role": "mage",
+      "classes": [
+        "法師",
+        "魔法"
+      ],
+      "abilities": [
+        "對敵人造成100%攻擊傷害，戰鬥中每0.3秒對周圍1格內的敵人造成相當於自身攻擊力5%的真實傷害。"
+      ],
+      "ability_desc": "造成攻擊傷害並持續對周圍敵人造成真實傷害。被動技能提供護盾，並在戰鬥開始時為所有友方法師提供護盾。",
+      "position_pref": "front",
+      "priority": 20,
+      "notes": "具有真實傷害與強大的護盾輔助能力，特別是針對法師隊伍。"
+    }
+  ]
+}

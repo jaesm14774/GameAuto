@@ -26,6 +26,7 @@ class GameAutoBot:
         ctrl_cfg = self.config.get("controller", {})
         loop_cfg = self.config.get("loop", {})
         cap_cfg = self.config.get("capture", {})
+        self.config_path = config_path
 
         # 截圖模組
         self.capture = GameCapture(
@@ -98,6 +99,30 @@ class GameAutoBot:
             self.agent.save_memory()
 
         log.info("=== GameAuto stopped ===")
+
+    def discover(self):
+        """角色掃描模式：掃描所有英雄角色，建立知識庫"""
+        log.info("=== 角色掃描模式 ===")
+
+        cap_mode = self.config.get("capture", {}).get("mode", "window")
+        if not self.capture.find_window():
+            if cap_mode == "fullscreen":
+                log.info("Window not found, using fullscreen capture mode")
+            else:
+                log.error("Cannot find game window.")
+                sys.exit(1)
+
+        self.capture.bring_to_front()
+        region = self.capture.window_region
+        if region:
+            self.controller.update_offset(region[0], region[1])
+            log.info("Window at (%d, %d) size %dx%d", *region)
+
+        time.sleep(1)
+
+        # 執行角色掃描
+        self.agent.discover_characters(self.capture, self.controller)
+        log.info("=== 角色掃描完成 ===")
 
     def stop(self):
         self._running = False
@@ -217,6 +242,8 @@ def main():
                         help="Enable debug logging")
     parser.add_argument("--calibrate", action="store_true",
                         help="校準模式：顯示滑鼠相對遊戲窗口的座標")
+    parser.add_argument("--discover", action="store_true",
+                        help="角色掃描模式：掃描英雄圖鑑建立知識庫")
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose else logging.INFO
@@ -233,6 +260,11 @@ def main():
     os.makedirs("screenshots", exist_ok=True)
 
     bot = GameAutoBot(config_path=args.config)
+
+    if args.discover:
+        bot.discover()
+        return
+
     bot.run()
 
 

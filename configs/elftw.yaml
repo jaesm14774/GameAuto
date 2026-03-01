@@ -68,6 +68,9 @@ states:
   protection_popup:
     detect: "精靈的庇護彈窗，詢問是否接受庇護（接受庇護按鈕）"
 
+  reward_popup:
+    detect: "精靈的贈禮彈窗，顯示勝利獎勵（收益接受按鈕），顯示金幣和寶箱獎勵"
+
   unknown:
     detect: "無法辨識的畫面"
 
@@ -95,8 +98,14 @@ transitions:
     to: match_result_defeat
     condition: "被淘汰（非第1名）"
   - from: match_result_win
+    to: reward_popup
+    condition: "確認結算後彈出精靈的贈禮"
+  - from: match_result_win
     to: main_menu
-    condition: "確認結算後"
+    condition: "確認結算後（贈禮已用完）"
+  - from: reward_popup
+    to: main_menu
+    condition: "接受贈禮後回到主選單"
   - from: match_result_defeat
     to: protection_popup
     condition: "確認結算後彈出庇護"
@@ -106,6 +115,9 @@ transitions:
   - from: "*"
     to: protection_popup
     condition: "彈出精靈庇護提示"
+  - from: "*"
+    to: reward_popup
+    condition: "彈出精靈的贈禮提示"
 
 # ============================================================
 # 策略 — 簡易法師對 (打人機用)
@@ -114,6 +126,18 @@ strategy:
   composition: "mage"
   # 準備階段先做幾個 tick 的固定操作（每 tick 2 輪），之後交給 LLM 判斷
   max_prep_rounds: 3
+  # 角色知識庫檔案路徑（由 --discover 自動生成）
+  knowledge_base: "characters_elftw.json"
+
+  # 聖物優先購買清單（有就選，沒有就不點讓遊戲自動推薦）
+  relics:
+    - {name: "精氣球", priority: 1}
+    - {name: "鐵樹枝幹", priority: 2}
+    - {name: "點金手", priority: 3}
+    - {name: "達貢神力", priority: 4}
+    - {name: "極限法球", priority: 5}
+    - {name: "食人魔之斧", priority: 6}
+    - {name: "魔瓶", priority: 7}
 
   # --------------------------------------------------------
   # 固定座標 (相對於遊戲窗口左上角)
@@ -147,10 +171,23 @@ strategy:
     relic_first: {x: 1100, y: 700}
 
     # 右上角秒數框（每輪點一下防卡頓，避免點到角色）
-    safe_click: {x: 1750, y: 120}
+    safe_click: {x: 1588, y: 194}
 
     # 接受庇護按鈕
     accept_btn: {x: 1255, y: 1019}
+
+    # 英雄圖鑑按鈕 (主選單，頭盔圖案)
+    hero_menu_btn: {x: 1463, y: 1354}
+    # 英雄詳情返回按鈕 — 用 --calibrate 校準（0,0 = LLM 自動找）
+    hero_back_btn: {x: 0, y: 0}
+
+    # 英雄圖鑑隊伍格 (5列×2排，出戰卡組)
+    # 由四角座標雙線性插值計算:
+    #   左上(950,323) 右上(1570,328)
+    #   左下(960,510) 右下(1567,510)
+    hero_roster_grid:
+      - [{x: 950, y: 323}, {x: 1105, y: 324}, {x: 1260, y: 326}, {x: 1415, y: 327}, {x: 1570, y: 328}]
+      - [{x: 960, y: 510}, {x: 1112, y: 510}, {x: 1264, y: 510}, {x: 1415, y: 510}, {x: 1567, y: 510}]
 
     # 棋盤格座標 (4排×5列)
     # Row 0 = 第一排 (最前排，靠敵方)
