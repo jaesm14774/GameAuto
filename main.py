@@ -9,10 +9,10 @@ from pathlib import Path
 
 import yaml
 
-from agent import GameAgent
-from capture import GameCapture
-from controller import GameController
-from strategy import Action
+from core.agent import create_agent
+from core.capture import GameCapture
+from core.controller import GameController
+from core.strategy import Action
 
 log = logging.getLogger("GameAuto")
 
@@ -43,7 +43,7 @@ class GameAutoBot:
         )
 
         # 決策引擎（狀態機 + 規則 + LLM 兜底）
-        self.agent = GameAgent(self.config)
+        self.agent = create_agent(self.config)
 
         # 迴圈參數
         self.tick_interval = loop_cfg.get("tick_interval", 0.5)

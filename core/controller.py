@@ -153,13 +153,13 @@ class GameController:
         """
         sx, sy = self._to_screen(x, y)
         self._move_to(sx, sy)
-        time.sleep(random.uniform(0.02, 0.08))
+        time.sleep(random.uniform(0.01, 0.03))
 
         # Click
         abs_x, abs_y = _screen_to_absolute(sx, sy)
         flags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_VIRTUALDESK
         _send_mouse_input(flags | MOUSEEVENTF_LEFTDOWN, abs_x, abs_y)
-        time.sleep(random.uniform(0.01, 0.04))
+        time.sleep(random.uniform(0.005, 0.02))
         _send_mouse_input(flags | MOUSEEVENTF_LEFTUP, abs_x, abs_y)
 
         wait = delay if delay is not None else random.uniform(*self.click_delay)
@@ -177,14 +177,14 @@ class GameController:
         _send_mouse_input(flags | MOUSEEVENTF_LEFTUP, abs_x, abs_y)
         time.sleep(random.uniform(*self.click_delay))
 
-    def drag(self, x1: int, y1: int, x2: int, y2: int, duration: float = 0.4):
+    def drag(self, x1: int, y1: int, x2: int, y2: int, duration: float = 0.25):
         """從 (x1,y1) 拖拽到 (x2,y2)"""
         sx1, sy1 = self._to_screen(x1, y1)
         sx2, sy2 = self._to_screen(x2, y2)
 
         # Move to start
         self._move_to(sx1, sy1)
-        time.sleep(random.uniform(0.02, 0.05))
+        time.sleep(random.uniform(0.01, 0.03))
 
         # Press down
         abs_x, abs_y = _screen_to_absolute(sx1, sy1)

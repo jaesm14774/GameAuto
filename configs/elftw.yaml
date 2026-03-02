@@ -30,8 +30,8 @@ vision:
 
 # 操作設定
 controller:
-  click_delay: [0.05, 0.12]
-  move_duration: [0.03, 0.08]
+  click_delay: [0.02, 0.06]
+  move_duration: [0.01, 0.04]
 
 # 主迴圈
 loop:
@@ -60,10 +60,10 @@ states:
     detect: "棋盤上單位戰鬥中，無可操作按鈕"
 
   match_result_win:
-    detect: "勝利結算畫面，顯示第1名或冠軍、勝利字樣"
+    detect: "勝利結算畫面，顯示第1名或第2名，冠軍、勝利字樣，或第二名排名"
 
   match_result_defeat:
-    detect: "失敗結算畫面，被淘汰或非第1名排名（第2名以後），顯示排名和獎勵"
+    detect: "失敗結算畫面，被淘汰（第3名以後），顯示排名和獎勵"
 
   protection_popup:
     detect: "精靈的庇護彈窗，詢問是否接受庇護（接受庇護按鈕）"
@@ -93,10 +93,10 @@ transitions:
     condition: "戰鬥結束，進入下一回合"
   - from: battle
     to: match_result_win
-    condition: "獲得第1名/勝利"
+    condition: "獲得第1名或第2名"
   - from: battle
     to: match_result_defeat
-    condition: "被淘汰（非第1名）"
+    condition: "被淘汰（第3名以後）"
   - from: match_result_win
     to: reward_popup
     condition: "確認結算後彈出精靈的贈禮"
@@ -124,8 +124,8 @@ transitions:
 # ============================================================
 strategy:
   composition: "mage"
-  # 準備階段先做幾個 tick 的固定操作（每 tick 2 輪），之後交給 LLM 判斷
-  max_prep_rounds: 3
+  # 準備階段先做幾個 tick 的盲買，之後交給 LLM 讀金幣判斷
+  max_prep_rounds: 2
   # 角色知識庫檔案路徑（由 --discover 自動生成）
   knowledge_base: "characters_elftw.json"
 
@@ -146,6 +146,9 @@ strategy:
   # !! 把滑鼠移到各按鈕上，記錄 Game 座標，填入下方 !!
   # --------------------------------------------------------
   positions:
+    # 裁切敵方區域的 Y 座標（可選，留空則從 board_grid 自動計算）
+    # player_board_y_start: 635
+
     # 商店卡牌 (底部三張)
     card_slots:
       - {x: 1080, y: 1028}   # 卡牌左
